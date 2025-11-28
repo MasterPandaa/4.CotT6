@@ -1,11 +1,12 @@
-import pygame
 import random
 import sys
+
+import pygame
 
 # Konfigurasi grid
 S_WIDTH = 800
 S_HEIGHT = 700
-PLAY_WIDTH = 300   # 10 kolom * 30 px
+PLAY_WIDTH = 300  # 10 kolom * 30 px
 PLAY_HEIGHT = 600  # 20 baris * 30 px
 BLOCK_SIZE = 30
 
@@ -13,118 +14,54 @@ TOP_LEFT_X = (S_WIDTH - PLAY_WIDTH) // 2
 TOP_LEFT_Y = S_HEIGHT - PLAY_HEIGHT - 50
 
 # Bentuk-bentuk Tetris (format 4x4 untuk tiap rotasi)
-S = [['.....',
-      '.....',
-      '..00.',
-      '.00..',
-      '.....'],
-     ['.....',
-      '..0..',
-      '..00.',
-      '...0.',
-      '.....']]
+S = [
+    [".....", ".....", "..00.", ".00..", "....."],
+    [".....", "..0..", "..00.", "...0.", "....."],
+]
 
-Z = [['.....',
-      '.....',
-      '.00..',
-      '..00.',
-      '.....'],
-     ['.....',
-      '..0..',
-      '.00..',
-      '.0...',
-      '.....']]
+Z = [
+    [".....", ".....", ".00..", "..00.", "....."],
+    [".....", "..0..", ".00..", ".0...", "....."],
+]
 
-I = [['..0..',
-      '..0..',
-      '..0..',
-      '..0..',
-      '.....'],
-     ['.....',
-      '0000.',
-      '.....',
-      '.....',
-      '.....']]
+I = [
+    ["..0..", "..0..", "..0..", "..0..", "....."],
+    [".....", "0000.", ".....", ".....", "....."],
+]
 
-O = [['.....',
-      '.....',
-      '.00..',
-      '.00..',
-      '.....']]
+O = [[".....", ".....", ".00..", ".00..", "....."]]
 
-J = [['.....',
-      '.0...',
-      '.000.',
-      '.....',
-      '.....'],
-     ['.....',
-      '..00.',
-      '..0..',
-      '..0..',
-      '.....'],
-     ['.....',
-      '.....',
-      '.000.',
-      '...0.',
-      '.....'],
-     ['.....',
-      '..0..',
-      '..0..',
-      '.00..',
-      '.....']]
+J = [
+    [".....", ".0...", ".000.", ".....", "....."],
+    [".....", "..00.", "..0..", "..0..", "....."],
+    [".....", ".....", ".000.", "...0.", "....."],
+    [".....", "..0..", "..0..", ".00..", "....."],
+]
 
-L = [['.....',
-      '...0.',
-      '.000.',
-      '.....',
-      '.....'],
-     ['.....',
-      '..0..',
-      '..0..',
-      '..00.',
-      '.....'],
-     ['.....',
-      '.....',
-      '.000.',
-      '.0...',
-      '.....'],
-     ['.....',
-      '.00..',
-      '..0..',
-      '..0..',
-      '.....']]
+L = [
+    [".....", "...0.", ".000.", ".....", "....."],
+    [".....", "..0..", "..0..", "..00.", "....."],
+    [".....", ".....", ".000.", ".0...", "....."],
+    [".....", ".00..", "..0..", "..0..", "....."],
+]
 
-T = [['.....',
-      '..0..',
-      '.000.',
-      '.....',
-      '.....'],
-     ['.....',
-      '..0..',
-      '..00.',
-      '..0..',
-      '.....'],
-     ['.....',
-      '.....',
-      '.000.',
-      '..0..',
-      '.....'],
-     ['.....',
-      '..0..',
-      '.00..',
-      '..0..',
-      '.....']]
+T = [
+    [".....", "..0..", ".000.", ".....", "....."],
+    [".....", "..0..", "..00.", "..0..", "....."],
+    [".....", ".....", ".000.", "..0..", "....."],
+    [".....", "..0..", ".00..", "..0..", "....."],
+]
 
 SHAPES = [S, Z, I, O, J, L, T]
 # Warna-warna untuk setiap shape
 SHAPE_COLORS = [
     (80, 227, 230),  # S - cyan-like
-    (234, 177, 133), # Z - peach
-    (48, 99, 142),   # I - blue dark
+    (234, 177, 133),  # Z - peach
+    (48, 99, 142),  # I - blue dark
     (237, 234, 85),  # O - yellow
-    (109, 104, 117), # J - gray
-    (87, 166, 57),   # L - green
-    (238, 130, 238)  # T - violet
+    (109, 104, 117),  # J - gray
+    (87, 166, 57),  # L - green
+    (238, 130, 238),  # T - violet
 ]
 
 
@@ -156,13 +93,15 @@ def convert_shape_format(piece):
     for i, line in enumerate(shape_format):
         row = list(line)
         for j, col in enumerate(row):
-            if col == '0':
+            if col == "0":
                 positions.append((piece.x + j - 2, piece.y + i - 4))
     return positions
 
 
 def valid_space(piece, grid):
-    accepted_positions = [[(j, i) for j in range(10) if grid[i][j] == (0, 0, 0)] for i in range(20)]
+    accepted_positions = [
+        [(j, i) for j in range(10) if grid[i][j] == (0, 0, 0)] for i in range(20)
+    ]
     accepted_positions = [j for sub in accepted_positions for j in sub]
 
     formatted = convert_shape_format(piece)
@@ -175,7 +114,7 @@ def valid_space(piece, grid):
 
 
 def check_lost(positions):
-    for (_, y) in positions:
+    for _, y in positions:
         if y < 1:
             return True
     return False
@@ -186,20 +125,35 @@ def get_shape():
 
 
 def draw_text_middle(surface, text, size, color):
-    font = pygame.font.SysFont('arial', size, bold=True)
+    font = pygame.font.SysFont("arial", size, bold=True)
     label = font.render(text, True, color)
 
-    surface.blit(label, (TOP_LEFT_X + PLAY_WIDTH / 2 - label.get_width() / 2,
-                         TOP_LEFT_Y + PLAY_HEIGHT / 2 - label.get_height() / 2))
+    surface.blit(
+        label,
+        (
+            TOP_LEFT_X + PLAY_WIDTH / 2 - label.get_width() / 2,
+            TOP_LEFT_Y + PLAY_HEIGHT / 2 - label.get_height() / 2,
+        ),
+    )
 
 
 def draw_grid(surface, grid):
     sx = TOP_LEFT_X
     sy = TOP_LEFT_Y
     for i in range(len(grid)):
-        pygame.draw.line(surface, (40, 40, 40), (sx, sy + i * BLOCK_SIZE), (sx + PLAY_WIDTH, sy + i * BLOCK_SIZE))
+        pygame.draw.line(
+            surface,
+            (40, 40, 40),
+            (sx, sy + i * BLOCK_SIZE),
+            (sx + PLAY_WIDTH, sy + i * BLOCK_SIZE),
+        )
         for j in range(len(grid[i])):
-            pygame.draw.line(surface, (40, 40, 40), (sx + j * BLOCK_SIZE, sy), (sx + j * BLOCK_SIZE, sy + PLAY_HEIGHT))
+            pygame.draw.line(
+                surface,
+                (40, 40, 40),
+                (sx + j * BLOCK_SIZE, sy),
+                (sx + j * BLOCK_SIZE, sy + PLAY_HEIGHT),
+            )
 
 
 def clear_rows(grid, locked):
@@ -233,8 +187,8 @@ def clear_rows(grid, locked):
 
 
 def draw_next_shape(piece, surface):
-    font = pygame.font.SysFont('arial', 24)
-    label = font.render('Next:', True, (255, 255, 255))
+    font = pygame.font.SysFont("arial", 24)
+    label = font.render("Next:", True, (255, 255, 255))
 
     sx = TOP_LEFT_X + PLAY_WIDTH + 30
     sy = TOP_LEFT_Y + 120
@@ -246,37 +200,59 @@ def draw_next_shape(piece, surface):
     for i, line in enumerate(shape_format):
         row = list(line)
         for j, col in enumerate(row):
-            if col == '0':
-                pygame.draw.rect(surface, piece.color,
-                                 (sx + j * 20, sy + i * 20, 20, 20), 0, border_radius=4)
+            if col == "0":
+                pygame.draw.rect(
+                    surface,
+                    piece.color,
+                    (sx + j * 20, sy + i * 20, 20, 20),
+                    0,
+                    border_radius=4,
+                )
 
 
 def draw_window(surface, grid, score=0, high_score=0):
     surface.fill((15, 15, 20))
 
     # Title
-    font = pygame.font.SysFont('arial', 48, bold=True)
-    label = font.render('TETRIS', True, (255, 255, 255))
+    font = pygame.font.SysFont("arial", 48, bold=True)
+    label = font.render("TETRIS", True, (255, 255, 255))
 
     surface.blit(label, (TOP_LEFT_X + PLAY_WIDTH / 2 - label.get_width() / 2, 20))
 
     # Score
-    font = pygame.font.SysFont('arial', 24)
-    score_label = font.render(f'Score: {score}', True, (200, 200, 200))
-    hi_label = font.render(f'High: {high_score}', True, (200, 200, 200))
+    font = pygame.font.SysFont("arial", 24)
+    score_label = font.render(f"Score: {score}", True, (200, 200, 200))
+    hi_label = font.render(f"High: {high_score}", True, (200, 200, 200))
 
     surface.blit(score_label, (TOP_LEFT_X - 200, TOP_LEFT_Y + 100))
     surface.blit(hi_label, (TOP_LEFT_X - 200, TOP_LEFT_Y + 140))
 
     # Play area border
-    pygame.draw.rect(surface, (180, 180, 180), (TOP_LEFT_X - 4, TOP_LEFT_Y - 4, PLAY_WIDTH + 8, PLAY_HEIGHT + 8), 2, border_radius=6)
+    pygame.draw.rect(
+        surface,
+        (180, 180, 180),
+        (TOP_LEFT_X - 4, TOP_LEFT_Y - 4, PLAY_WIDTH + 8, PLAY_HEIGHT + 8),
+        2,
+        border_radius=6,
+    )
 
     # Draw grid blocks
     for i in range(len(grid)):
         for j in range(len(grid[i])):
             color = grid[i][j]
             if color != (0, 0, 0):
-                pygame.draw.rect(surface, color, (TOP_LEFT_X + j * BLOCK_SIZE, TOP_LEFT_Y + i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE), 0, border_radius=6)
+                pygame.draw.rect(
+                    surface,
+                    color,
+                    (
+                        TOP_LEFT_X + j * BLOCK_SIZE,
+                        TOP_LEFT_Y + i * BLOCK_SIZE,
+                        BLOCK_SIZE,
+                        BLOCK_SIZE,
+                    ),
+                    0,
+                    border_radius=6,
+                )
 
     # Grid lines
     draw_grid(surface, grid)
@@ -299,8 +275,8 @@ def main(win):
 
     # coba baca high score dari file
     try:
-        with open('highscore.txt', 'r') as f:
-            high_score = int(f.read().strip() or '0')
+        with open("highscore.txt", "r") as f:
+            high_score = int(f.read().strip() or "0")
     except Exception:
         high_score = 0
 
@@ -347,7 +323,9 @@ def main(win):
                 elif event.key == pygame.K_UP:
                     # rotate
                     prev_rotation = current_piece.rotation
-                    current_piece.rotation = (current_piece.rotation + 1) % len(current_piece.shape)
+                    current_piece.rotation = (current_piece.rotation + 1) % len(
+                        current_piece.shape
+                    )
                     if not valid_space(current_piece, grid):
                         # coba nudge ke kiri/kanan agar muat (wall kick sederhana)
                         current_piece.x += 1
@@ -384,7 +362,7 @@ def main(win):
 
             cleared = clear_rows(grid, locked_positions)
             if cleared:
-                score += (cleared ** 2) * 100
+                score += (cleared**2) * 100
 
         draw_window(win, grid, score, max(score, high_score))
         draw_next_shape(next_piece, win)
@@ -394,11 +372,11 @@ def main(win):
             # simpan high score
             high_score = max(high_score, score)
             try:
-                with open('highscore.txt', 'w') as f:
+                with open("highscore.txt", "w") as f:
                     f.write(str(high_score))
             except Exception:
                 pass
-            draw_text_middle(win, 'GAME OVER', 48, (255, 80, 80))
+            draw_text_middle(win, "GAME OVER", 48, (255, 80, 80))
             pygame.display.update()
             pygame.time.delay(2000)
             run = False
@@ -407,13 +385,15 @@ def main(win):
 def main_menu():
     pygame.init()
     win = pygame.display.set_mode((S_WIDTH, S_HEIGHT))
-    pygame.display.set_caption('Tetris - Pygame')
+    pygame.display.set_caption("Tetris - Pygame")
     clock = pygame.time.Clock()
 
     while True:
         win.fill((15, 15, 20))
-        draw_text_middle(win, 'Tekan ENTER untuk mulai', 32, (220, 220, 220))
-        draw_text_middle(win, 'Panah: Gerak, Atas: Rotasi, Spasi: Hard Drop', 20, (160, 160, 160))
+        draw_text_middle(win, "Tekan ENTER untuk mulai", 32, (220, 220, 220))
+        draw_text_middle(
+            win, "Panah: Gerak, Atas: Rotasi, Spasi: Hard Drop", 20, (160, 160, 160)
+        )
         pygame.display.update()
         clock.tick(30)
 
@@ -426,5 +406,5 @@ def main_menu():
                     main(win)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main_menu()
